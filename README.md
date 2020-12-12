@@ -110,3 +110,7 @@ myagent.sinks.mysink.channel = mychannel
     </layout>
 </appender>
 ```
+
+### 许可证
+
+[Apache License](LICENSE)
