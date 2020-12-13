@@ -16,8 +16,6 @@ import org.apache.flume.Event;
 import org.apache.flume.FlumeException;
 import org.apache.flume.event.EventBuilder;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -41,25 +39,10 @@ public class FlumeAvroAppender extends UnsynchronizedAppenderBase<ILoggingEvent>
 
     // 以下内容会被作为Header发送出去
     private Map<String, String> additionalAvroHeaders;
-    private String application; // 应用名
-    private String tier; // 层次
-    private String type; // 日志类型
-    private String hostname; // hostname
+    private AvroHeaders avroHeaders;
 
-    public void setApplication(String application) {
-        this.application = application;
-    }
-
-    public void setTier(String tier) {
-        this.tier = tier;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public void setHostname(String hostname) {
-        this.hostname = hostname;
+    public void setAvroHeaders(AvroHeaders avroHeaders) {
+        this.avroHeaders = avroHeaders;
     }
 
     public void setLayout(Layout<ILoggingEvent> layout) {
@@ -115,8 +98,9 @@ public class FlumeAvroAppender extends UnsynchronizedAppenderBase<ILoggingEvent>
         if (layout == null) {
             addWarn("Layout was not defined, will only log the message, no stack traces or custom layout");
         }
-        if (StringUtils.isEmpty(application)) {
-            application = resolveApplication();
+
+        if (this.avroHeaders == null) {
+            this.avroHeaders = new AvroHeaders();
         }
 
         if (StringUtils.isNotEmpty(flumeAgents)) {
@@ -179,11 +163,10 @@ public class FlumeAvroAppender extends UnsynchronizedAppenderBase<ILoggingEvent>
 
     @Override
     protected void append(ILoggingEvent eventObj) {
-
         if (flumeManager != null) {
             try {
                 String body = layout != null ? layout.doLayout(eventObj) : eventObj.getFormattedMessage();
-                Map<String, String> headers = new HashMap<>();
+                final Map<String, String> headers = new HashMap<>();
                 if (additionalAvroHeaders != null) {
                     headers.putAll(additionalAvroHeaders);
                 }
@@ -201,38 +184,28 @@ public class FlumeAvroAppender extends UnsynchronizedAppenderBase<ILoggingEvent>
     private Map<String, String> extractHeaders(ILoggingEvent eventObj) {
         final Map<String, String> headers = new HashMap<>();
         headers.put("timestamp", Long.toString(eventObj.getTimeStamp()));
-        headers.put("loggerName", eventObj.getLoggerName());
-        headers.put("loggerLevel", eventObj.getLevel().toString());
-        headers.put("loggerMessage", eventObj.getMessage());
-
-        headers.put("host", resolveHostname());
         headers.put("thread", eventObj.getThreadName());
+        headers.put("logger-name", eventObj.getLoggerName());
+        headers.put("logger-level", eventObj.getLevel().toString());
+//        headers.put("logger-msg", eventObj.getMessage());
 
-        if (StringUtils.isNotBlank(application)) {
-            headers.put("application", application);
+        if (StringUtils.isNotBlank(avroHeaders.getApplication())) {
+            headers.put("application", avroHeaders.getApplication());
         }
 
-        if (StringUtils.isNotBlank(tier)) {
-            headers.put("tier", tier);
+        if (StringUtils.isNotBlank(avroHeaders.getTier())) {
+            headers.put("tier", avroHeaders.getTier());
         }
 
-        if (StringUtils.isNotBlank(type)) {
-            headers.put("type", type);
+        if (StringUtils.isNotBlank(avroHeaders.getType())) {
+            headers.put("type", avroHeaders.getType());
+        }
+
+        if (StringUtils.isNotBlank(avroHeaders.getHostname())) {
+            headers.put("hostname", avroHeaders.getHostname());
         }
 
         return headers;
-    }
-
-    private String resolveHostname() {
-        try {
-            return hostname != null ? hostname : InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            return null;
-        }
-    }
-
-    private String resolveApplication() {
-        return System.getProperty("application.name");
     }
 
 }
