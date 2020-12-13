@@ -23,12 +23,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
- * @deprecated 请使用{@link FlumeAvroAppender}
+ * @author 应卓
+ * @since 0.1.0
  */
-@Deprecated
-public class FlumeLogstashV1Appender extends UnsynchronizedAppenderBase<ILoggingEvent> {
+public class FlumeAvroAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
 
     protected static final Charset UTF_8 = StandardCharsets.UTF_8;
+
     protected Layout<ILoggingEvent> layout;
     private FlumeAvroManager flumeManager;
     private String flumeAgents;
@@ -37,11 +38,21 @@ public class FlumeLogstashV1Appender extends UnsynchronizedAppenderBase<ILogging
     private Integer batchSize;
     private Integer reporterMaxThreadPoolSize;
     private Integer reporterMaxQueueSize;
-    private Map<String, String> additionalAvroHeaders;
-    private String application;
-    private String hostname;
 
-    private String type;
+    // 以下内容会被作为Header发送出去
+    private Map<String, String> additionalAvroHeaders;
+    private String application; // 应用名
+    private String tier; // 层次
+    private String type; // 日志类型
+    private String hostname; // hostname
+
+    public void setApplication(String application) {
+        this.application = application;
+    }
+
+    public void setTier(String tier) {
+        this.tier = tier;
+    }
 
     public void setType(String type) {
         this.type = type;
@@ -49,10 +60,6 @@ public class FlumeLogstashV1Appender extends UnsynchronizedAppenderBase<ILogging
 
     public void setHostname(String hostname) {
         this.hostname = hostname;
-    }
-
-    public void setApplication(String application) {
-        this.application = application;
     }
 
     public void setLayout(Layout<ILoggingEvent> layout) {
@@ -115,7 +122,7 @@ public class FlumeLogstashV1Appender extends UnsynchronizedAppenderBase<ILogging
         if (StringUtils.isNotEmpty(flumeAgents)) {
             String[] agentConfigs = flumeAgents.split(",");
 
-            List<RemoteFlumeAgent> agents = new ArrayList<RemoteFlumeAgent>(agentConfigs.length);
+            List<RemoteFlumeAgent> agents = new ArrayList<>(agentConfigs.length);
             for (String conf : agentConfigs) {
                 RemoteFlumeAgent agent = RemoteFlumeAgent.fromString(conf.trim());
                 if (agent != null) {
@@ -135,7 +142,7 @@ public class FlumeLogstashV1Appender extends UnsynchronizedAppenderBase<ILogging
     }
 
     private Map<String, String> extractProperties(String propertiesAsString) {
-        final Map<String, String> props = new HashMap<String, String>();
+        final Map<String, String> props = new HashMap<>();
         if (StringUtils.isNotEmpty(propertiesAsString)) {
             final String[] segments = propertiesAsString.split(";");
             for (final String segment : segments) {
@@ -171,16 +178,16 @@ public class FlumeLogstashV1Appender extends UnsynchronizedAppenderBase<ILogging
     }
 
     @Override
-    protected void append(ILoggingEvent eventObject) {
+    protected void append(ILoggingEvent eventObj) {
 
         if (flumeManager != null) {
             try {
-                String body = layout != null ? layout.doLayout(eventObject) : eventObject.getFormattedMessage();
-                Map<String, String> headers = new HashMap<String, String>();
+                String body = layout != null ? layout.doLayout(eventObj) : eventObj.getFormattedMessage();
+                Map<String, String> headers = new HashMap<>();
                 if (additionalAvroHeaders != null) {
                     headers.putAll(additionalAvroHeaders);
                 }
-                headers.putAll(extractHeaders(eventObject));
+                headers.putAll(extractHeaders(eventObj));
 
                 Event event = EventBuilder.withBody(body.trim(), UTF_8, headers);
 
@@ -189,38 +196,43 @@ public class FlumeLogstashV1Appender extends UnsynchronizedAppenderBase<ILogging
                 addError(e.getLocalizedMessage(), e);
             }
         }
-
     }
 
-    private Map<String, String> extractHeaders(ILoggingEvent eventObject) {
-        Map<String, String> headers = new HashMap<String, String>(10);
-        headers.put("timestamp", Long.toString(eventObject.getTimeStamp()));
-        headers.put("type", eventObject.getLevel().toString());
-        headers.put("logger", eventObject.getLoggerName());
-        headers.put("message", eventObject.getMessage());
-        headers.put("level", eventObject.getLevel().toString());
-        try {
-            headers.put("host", resolveHostname());
-        } catch (UnknownHostException e) {
-            addWarn(e.getMessage());
-        }
-        headers.put("thread", eventObject.getThreadName());
-        if (StringUtils.isNotEmpty(application)) {
+    private Map<String, String> extractHeaders(ILoggingEvent eventObj) {
+        final Map<String, String> headers = new HashMap<>();
+        headers.put("timestamp", Long.toString(eventObj.getTimeStamp()));
+        headers.put("loggerName", eventObj.getLoggerName());
+        headers.put("loggerLevel", eventObj.getLevel().toString());
+        headers.put("loggerMessage", eventObj.getMessage());
+
+        headers.put("host", resolveHostname());
+        headers.put("thread", eventObj.getThreadName());
+
+        if (StringUtils.isNotBlank(application)) {
             headers.put("application", application);
         }
 
-        if (StringUtils.isNotEmpty(type)) {
+        if (StringUtils.isNotBlank(tier)) {
+            headers.put("tier", tier);
+        }
+
+        if (StringUtils.isNotBlank(type)) {
             headers.put("type", type);
         }
 
         return headers;
     }
 
-    private String resolveHostname() throws UnknownHostException {
-        return hostname != null ? hostname : InetAddress.getLocalHost().getHostName();
+    private String resolveHostname() {
+        try {
+            return hostname != null ? hostname : InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            return null;
+        }
     }
 
     private String resolveApplication() {
         return System.getProperty("application.name");
     }
+
 }

@@ -1,3 +1,11 @@
+/*
+ _             _                _          __ _                                                             _
+| | ___   __ _| |__   __ _  ___| | __     / _| |_   _ _ __ ___   ___        __ _ _ __  _ __   ___ _ __   __| | ___ _ __
+| |/ _ \ / _` | '_ \ / _` |/ __| |/ /____| |_| | | | | '_ ` _ \ / _ \_____ / _` | '_ \| '_ \ / _ \ '_ \ / _` |/ _ \ '__|
+| | (_) | (_| | |_) | (_| | (__|   <_____|  _| | |_| | | | | | |  __/_____| (_| | |_) | |_) |  __/ | | | (_| |  __/ |
+|_|\___/ \__, |_.__/ \__,_|\___|_|\_\    |_| |_|\__,_|_| |_| |_|\___|      \__,_| .__/| .__/ \___|_| |_|\__,_|\___|_|
+         |___/         https://github.com/yingzhuo/logback-flume-appender       |_|   |_|
+*/
 package com.github.yingzhuo.logback.flume;
 
 import ch.qos.logback.core.spi.ContextAware;
@@ -22,6 +30,7 @@ public class FlumeAvroManager {
     private final static int DEFAULT_BATCH_SIZE = 50;
     private final static int DEFAULT_REPORTER_MAX_THREADPOOL_SIZE = 2;
     private final static int DEFAULT_REPORTER_MAX_QUEUE_SIZE = 50;
+
     private final ContextAware loggingContext;
     private final BlockingQueue<Event> evQueue;
 
@@ -43,7 +52,7 @@ public class FlumeAvroManager {
                 DEFAULT_REPORTER_MAX_QUEUE_SIZE : reporterMaxQueueSizeReq;
 
         this.reporter = new EventReporter(props, loggingContext, reporterMaxThreadPoolSize, reporterMaxQueueSize);
-        this.evQueue = new ArrayBlockingQueue<Event>(1000);
+        this.evQueue = new ArrayBlockingQueue<>(1000);
         final long reportingWindow = hamonizeReportingWindow(reportingWindowReq);
         final int batchSize = batchSizeReq == null ? DEFAULT_BATCH_SIZE : batchSizeReq;
         this.asyncThread = new AsyncThread(evQueue, batchSize, reportingWindow);

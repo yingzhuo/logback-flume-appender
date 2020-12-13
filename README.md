@@ -30,17 +30,18 @@
 <dependency>
     <groupId>com.github.yingzhuo</groupId>
     <artifactId>logback-flume-appender</artifactId>
-    <version>0.0.1</version>
+    <version>0.1.0</version>
 </dependency>
 ```
 
 ### 用法
 
-1) flume agent配置 (片段)
+1) flume agent配置
 
 ```config
-# myagent
-
+###############################################################################
+# Basic
+###############################################################################
 myagent.sources = mysource
 myagent.channels = mychannel
 myagent.sinks = mysink
@@ -60,15 +61,15 @@ myagent.sources.mysource.selector.type = replicating
 
 # kafka 实现
 myagent.channels.mychannel.type = org.apache.flume.channel.kafka.KafkaChannel
-myagent.channels.mychannel.kafka.bootstrap.servers = 192.168.99.127:9092,192.168.99.128:9092,192.168.99.129:9092
+myagent.channels.mychannel.kafka.bootstrap.servers = 10.211.55.3:9092
 myagent.channels.mychannel.kafka.topic = flume-channel
 myagent.channels.mychannel.kafka.group.id = flume
 
 ###############################################################################
 # Sink(s)
-############################################################################### 
+###############################################################################
 myagent.sinks.mysink.type = hdfs
-myagent.sinks.mysink.hdfs.path = hdfs://192.168.99.130:8020/flume/%{application}/%{logtype}/%Y%m%d
+myagent.sinks.mysink.hdfs.path = hdfs://localhost:9000/flume/%{application}/%{type}/%Y-%m-%d
 myagent.sinks.mysink.hdfs.useLocalTimeStamp = true
 myagent.sinks.mysink.hdfs.fileType = DataStream
 myagent.sinks.mysink.hdfs.writeFormat = Text
@@ -77,7 +78,7 @@ myagent.sinks.mysink.hdfs.rollInterval = 0
 myagent.sinks.mysink.hdfs.rollSize = 134217700
 myagent.sinks.mysink.hdfs.rollCount= 0
 
-# myagent.sinks.mysink.type = logger
+myagent.sinks.mysink.type = logger
 
 ###############################################################################
 # Assemble
@@ -89,7 +90,7 @@ myagent.sinks.mysink.channel = mychannel
 2) logback配置 (片段)
 
 ```xml
-<appender name="FLUME" class="com.github.yingzhuo.logback.flume.FlumeLogstashV1Appender">
+<appender name="FLUME" class="com.github.yingzhuo.logback.flume.FlumeAvroAppender">
     <flumeAgents>
         192.168.99.127:4141
     </flumeAgents>
@@ -99,14 +100,18 @@ myagent.sinks.mysink.channel = mychannel
     </flumeProperties>
     <batchSize>100</batchSize>
     <reportingWindow>1000</reportingWindow>
+    <application>playground</application>
+    <tier>default</tier>
+    <type>business1</type>
     <additionalAvroHeaders>
-        logtype = flow;
         key1 = value1;
         key2 = value2
     </additionalAvroHeaders>
-    <application>playground</application>
     <layout class="ch.qos.logback.classic.PatternLayout">
+        <!--
         <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - \(%file:%line\) - %message%n%ex</pattern>
+        -->
+        <pattern>%message%n%ex</pattern>
     </layout>
 </appender>
 ```

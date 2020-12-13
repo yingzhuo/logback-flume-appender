@@ -1,12 +1,27 @@
+/*
+ _             _                _          __ _                                                             _
+| | ___   __ _| |__   __ _  ___| | __     / _| |_   _ _ __ ___   ___        __ _ _ __  _ __   ___ _ __   __| | ___ _ __
+| |/ _ \ / _` | '_ \ / _` |/ __| |/ /____| |_| | | | | '_ ` _ \ / _ \_____ / _` | '_ \| '_ \ / _ \ '_ \ / _` |/ _ \ '__|
+| | (_) | (_| | |_) | (_| | (__|   <_____|  _| | |_| | | | | | |  __/_____| (_| | |_) | |_) |  __/ | | | (_| |  __/ |
+|_|\___/ \__, |_.__/ \__,_|\___|_|\_\    |_| |_|\__,_|_| |_| |_|\___|      \__,_| .__/| .__/ \___|_| |_|\__,_|\___|_|
+         |___/         https://github.com/yingzhuo/logback-flume-appender       |_|   |_|
+*/
 package com.github.yingzhuo.logback.flume;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class RemoteFlumeAgent {
+public class RemoteFlumeAgent {
 
     private static final Logger log = LoggerFactory.getLogger(RemoteFlumeAgent.class);
+    private final String hostname;
+    private final Integer port;
+
+    public RemoteFlumeAgent(String hostname, Integer port) {
+        this.hostname = hostname;
+        this.port = port;
+    }
 
     public static RemoteFlumeAgent fromString(String input) {
         if (StringUtils.isEmpty(input)) {
@@ -30,14 +45,6 @@ public final class RemoteFlumeAgent {
         }
     }
 
-    private final String hostname;
-    private final Integer port;
-
-    public RemoteFlumeAgent(String hostname, Integer port) {
-        this.hostname = hostname;
-        this.port = port;
-    }
-
     public String getHostname() {
         return hostname;
     }
@@ -45,4 +52,5 @@ public final class RemoteFlumeAgent {
     public Integer getPort() {
         return port;
     }
+
 }
