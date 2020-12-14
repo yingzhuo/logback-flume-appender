@@ -187,7 +187,6 @@ public class FlumeAvroAppender extends UnsynchronizedAppenderBase<ILoggingEvent>
         headers.put("thread", eventObj.getThreadName());
         headers.put("logger-name", eventObj.getLoggerName());
         headers.put("logger-level", eventObj.getLevel().toString());
-//        headers.put("logger-msg", eventObj.getMessage());
 
         if (StringUtils.isNotBlank(avroHeaders.getApplication())) {
             headers.put("application", avroHeaders.getApplication());
