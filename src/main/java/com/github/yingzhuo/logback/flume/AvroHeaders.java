@@ -19,6 +19,7 @@ public class AvroHeaders {
 
     private String application;
     private String tier;
+    private String tag;
     private String type;
     private String hostname;
 
@@ -58,6 +59,14 @@ public class AvroHeaders {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
     }
 
     public String getHostname() {

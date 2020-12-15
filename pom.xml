@@ -6,7 +6,7 @@
 
     <groupId>com.github.yingzhuo</groupId>
     <artifactId>logback-flume-appender</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
     <packaging>jar</packaging>
 
     <parent>
@@ -77,11 +77,13 @@
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-core</artifactId>
                 <version>1.2.3</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
                 <version>1.2.3</version>
+                <scope>provided</scope>
             </dependency>
 
             <!-- flume-sdk -->
@@ -160,25 +162,6 @@
                         <compilerArg>-Xlint:deprecation</compilerArg>
                     </compilerArgs>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>native2ascii-maven-plugin</artifactId>
-                <version>2.0.1</version>
-                <executions>
-                    <execution>
-                        <id>native2ascii-utf8-properties</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>inplace</goal>
-                        </goals>
-                        <configuration>
-                            <dir>${project.build.directory}/classes</dir>
-                            <includes>**/*.properties</includes>
-                            <encoding>UTF-8</encoding>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

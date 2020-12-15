@@ -16,7 +16,6 @@ import org.apache.flume.Event;
 import org.apache.flume.FlumeException;
 import org.apache.flume.event.EventBuilder;
 
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -25,8 +24,6 @@ import java.util.*;
  * @since 0.1.0
  */
 public class FlumeAvroAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
-
-    protected static final Charset UTF_8 = StandardCharsets.UTF_8;
 
     protected Layout<ILoggingEvent> layout;
     private FlumeAvroManager flumeManager;
@@ -38,15 +35,19 @@ public class FlumeAvroAppender extends UnsynchronizedAppenderBase<ILoggingEvent>
     private Integer reporterMaxQueueSize;
 
     // 以下内容会被作为Header发送出去
-    private Map<String, String> additionalAvroHeaders;
-    private AvroHeaders avroHeaders;
+    private AvroHeaders headers;
+    private Map<String, String> additionalHeaders;
 
-    public void setAvroHeaders(AvroHeaders avroHeaders) {
-        this.avroHeaders = avroHeaders;
+    public void setHeaders(AvroHeaders avroHeaders) {
+        this.headers = avroHeaders;
     }
 
     public void setLayout(Layout<ILoggingEvent> layout) {
         this.layout = layout;
+    }
+
+    public void setAdditionalHeaders(String additionalHeaders) {
+        this.additionalHeaders = extractProperties(additionalHeaders);
     }
 
     public void setFlumeAgents(String flumeAgents) {
@@ -55,10 +56,6 @@ public class FlumeAvroAppender extends UnsynchronizedAppenderBase<ILoggingEvent>
 
     public void setFlumeProperties(String flumeProperties) {
         this.flumeProperties = flumeProperties;
-    }
-
-    public void setAdditionalAvroHeaders(String additionalHeaders) {
-        this.additionalAvroHeaders = extractProperties(additionalHeaders);
     }
 
     public void setBatchSize(String batchSizeStr) {
@@ -99,8 +96,8 @@ public class FlumeAvroAppender extends UnsynchronizedAppenderBase<ILoggingEvent>
             addWarn("Layout was not defined, will only log the message, no stack traces or custom layout");
         }
 
-        if (this.avroHeaders == null) {
-            this.avroHeaders = new AvroHeaders();
+        if (this.headers == null) {
+            this.headers = new AvroHeaders();
         }
 
         if (StringUtils.isNotEmpty(flumeAgents)) {
@@ -167,12 +164,12 @@ public class FlumeAvroAppender extends UnsynchronizedAppenderBase<ILoggingEvent>
             try {
                 String body = layout != null ? layout.doLayout(eventObj) : eventObj.getFormattedMessage();
                 final Map<String, String> headers = new HashMap<>();
-                if (additionalAvroHeaders != null) {
-                    headers.putAll(additionalAvroHeaders);
+                if (additionalHeaders != null) {
+                    headers.putAll(additionalHeaders);
                 }
                 headers.putAll(extractHeaders(eventObj));
 
-                Event event = EventBuilder.withBody(body.trim(), UTF_8, headers);
+                Event event = EventBuilder.withBody(body.trim(), StandardCharsets.UTF_8, headers);
 
                 flumeManager.send(event);
             } catch (Exception e) {
@@ -188,20 +185,24 @@ public class FlumeAvroAppender extends UnsynchronizedAppenderBase<ILoggingEvent>
         headers.put("logger-name", eventObj.getLoggerName());
         headers.put("logger-level", eventObj.getLevel().toString());
 
-        if (StringUtils.isNotBlank(avroHeaders.getApplication())) {
-            headers.put("application", avroHeaders.getApplication());
+        if (StringUtils.isNotBlank(this.headers.getApplication())) {
+            headers.put("application", this.headers.getApplication());
         }
 
-        if (StringUtils.isNotBlank(avroHeaders.getTier())) {
-            headers.put("tier", avroHeaders.getTier());
+        if (StringUtils.isNotBlank(this.headers.getTier())) {
+            headers.put("tier", this.headers.getTier());
         }
 
-        if (StringUtils.isNotBlank(avroHeaders.getType())) {
-            headers.put("type", avroHeaders.getType());
+        if (StringUtils.isNotBlank(this.headers.getType())) {
+            headers.put("type", this.headers.getType());
         }
 
-        if (StringUtils.isNotBlank(avroHeaders.getHostname())) {
-            headers.put("hostname", avroHeaders.getHostname());
+        if (StringUtils.isNotBlank(this.headers.getTag())) {
+            headers.put("tag", this.headers.getTag());
+        }
+
+        if (StringUtils.isNotBlank(this.headers.getHostname())) {
+            headers.put("hostname", this.headers.getHostname());
         }
 
         return headers;

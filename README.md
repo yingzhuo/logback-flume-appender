@@ -30,7 +30,7 @@
 <dependency>
     <groupId>com.github.yingzhuo</groupId>
     <artifactId>logback-flume-appender</artifactId>
-    <version>0.2.0</version>
+    <version>0.2.1</version>
 </dependency>
 ```
 
@@ -100,17 +100,16 @@ myagent.sinks.mysink.channel = mychannel
     </flumeProperties>
     <batchSize>100</batchSize>
     <reportingWindow>1000</reportingWindow>
-    <avroHeaders>
-        <application>playground</application>
-        <tier>playground</tier>
-        <type>flume</type>
-    </avroHeaders>
-    <!--
-    <additionalAvroHeaders>
+    <headers>
+        <application>my application</application>
+        <tier>my tier</tier>
+        <type>my log type</type>
+        <tag>my tag</tag>
+    </headers>
+    <additionalHeaders>
         key1 = value1;
         key2 = value2
-    </additionalAvroHeaders>
-    -->
+    </additionalHeaders>
     <layout class="ch.qos.logback.classic.PatternLayout">
         <pattern>%message%n%ex</pattern>
     </layout>
