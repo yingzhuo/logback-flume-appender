@@ -92,7 +92,9 @@ myagent.sinks.mysink.channel = mychannel
 ```xml
 <appender name="FLUME" class="com.github.yingzhuo.logback.flume.FlumeAvroAppender">
     <flumeAgents>
-        10.211.55.3:4141
+        10.211.55.3:4141,
+        10.211.55.4:4141,
+        10.211.55.5:4141,
     </flumeAgents>
     <flumeProperties>
         connect-timeout=4000;
@@ -115,6 +117,8 @@ myagent.sinks.mysink.channel = mychannel
     </layout>
 </appender>
 ```
+
+> **注意:** 配置复数个Agents时，每条日志只会发送到其中一个Agent。
 
 ### 许可证
 
