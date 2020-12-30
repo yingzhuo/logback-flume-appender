@@ -115,6 +115,9 @@ myagent.sinks.mysink.channel = mychannel
     <layout class="ch.qos.logback.classic.PatternLayout">
         <pattern>%message%n%ex</pattern>
     </layout>
+    <description>
+        说明
+    </description>
 </appender>
 ```
 
