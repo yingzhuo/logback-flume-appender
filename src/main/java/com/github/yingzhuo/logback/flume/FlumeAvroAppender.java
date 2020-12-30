@@ -90,6 +90,13 @@ public class FlumeAvroAppender extends UnsynchronizedAppenderBase<ILoggingEvent>
         }
     }
 
+    /**
+     * @since 0.2.2
+     */
+    public void setDescription(String description) {
+        // description将被忽略
+    }
+
     @Override
     public void start() {
         if (layout == null) {
