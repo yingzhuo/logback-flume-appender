@@ -30,7 +30,7 @@
 <dependency>
     <groupId>com.github.yingzhuo</groupId>
     <artifactId>logback-flume-appender</artifactId>
-    <version>0.2.1</version>
+    <version>0.2.2</version>
 </dependency>
 ```
 
