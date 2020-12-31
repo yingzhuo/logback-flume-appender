@@ -39,50 +39,39 @@
 1) flume agent配置
 
 ```config
-###############################################################################
-# Basic
-###############################################################################
 myagent.sources = mysource
 myagent.channels = mychannel
 myagent.sinks = mysink
 
-###############################################################################
-# Source(s)
-###############################################################################
+# sources
 myagent.sources.mysource.type = avro
 myagent.sources.mysource.bind = 0.0.0.0
 myagent.sources.mysource.port = 4141
 
+# channel selector
 myagent.sources.mysource.selector.type = replicating
 
-###############################################################################
-# Channel(s)
-###############################################################################
-
-# kafka 实现
+# channels
 myagent.channels.mychannel.type = org.apache.flume.channel.kafka.KafkaChannel
-myagent.channels.mychannel.kafka.bootstrap.servers = 10.211.55.3:9092
+myagent.channels.mychannel.kafka.bootstrap.servers = 192.168.99.127:9092,192.168.99.128:9092,192.168.99.129:9092
 myagent.channels.mychannel.kafka.topic = flume-channel
 myagent.channels.mychannel.kafka.group.id = flume
 
-###############################################################################
-# Sink(s)
-###############################################################################
+# sinks
 myagent.sinks.mysink.type = hdfs
-myagent.sinks.mysink.hdfs.path = hdfs://localhost:9000/flume/%{application}/%{type}/%Y-%m-%d
+myagent.sinks.mysink.hdfs.path = hdfs://192.168.99.130:8020/%{application}/log/%{type}/%Y-%m-%d
 myagent.sinks.mysink.hdfs.useLocalTimeStamp = true
-myagent.sinks.mysink.hdfs.fileType = DataStream
+myagent.sinks.mysink.hdfs.fileType = CompressedStream
+myagent.sinks.mysink.hdfs.codeC = lzop
+myagent.sinks.mysink.hdfs.fileSuffix = .lzo
 myagent.sinks.mysink.hdfs.writeFormat = Text
 myagent.sinks.mysink.hdfs.round = true
-myagent.sinks.mysink.hdfs.rollInterval = 0
-myagent.sinks.mysink.hdfs.rollSize = 134217700
-myagent.sinks.mysink.hdfs.rollCount= 0
+myagent.sinks.mysink.hdfs.rollInterval = 600
+myagent.sinks.mysink.hdfs.rollSize = 268435456
+myagent.sinks.mysink.hdfs.rollCount = 0
+myagent.sinks.mysink.hdfs.timeZone = Asia/Shanghai
 
-myagent.sinks.mysink.type = logger
-
-###############################################################################
-# Assemble
-###############################################################################
+# 集成
 myagent.sources.mysource.channels = mychannel
 myagent.sinks.mysink.channel = mychannel
 ```
